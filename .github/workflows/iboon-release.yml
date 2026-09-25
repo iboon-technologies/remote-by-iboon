@@ -11,6 +11,12 @@ on:
     tags:
       - "iboon-*"
 
+# The org gives workflows a read-only token by default; publishing the
+# release (and the Linux build's container cache) needs these.
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   build:
     uses: ./.github/workflows/iboon-build.yml
