@@ -227,7 +227,12 @@ pub fn translate_locale(name: String, locale: &str) -> String {
                 && !name.starts_with("upgrade_rustdesk_server_pro")
                 && name != "powered_by_me"
             {
-                let app_name = crate::get_app_name();
+                // iBoon: people read the display name, not the internal one.
+                let app_name = if crate::get_app_name() == crate::common::IBOON_APP_NAME {
+                    crate::common::IBOON_DISPLAY_NAME.to_owned()
+                } else {
+                    crate::get_app_name()
+                };
                 if !app_name.contains("RustDesk") {
                     s = s.replace("RustDesk", &app_name);
                 } else {

@@ -76,6 +76,12 @@ def make_parser():
         "--app-name", type=str, default="RustDesk", help="The app name."
     )
     parser.add_argument(
+        "--display-name",
+        type=str,
+        default="",
+        help="Name shown in Windows' installed-apps list, if it differs from --app-name (which names the exe, folder and service, so it has no spaces).",
+    )
+    parser.add_argument(
         "-v", "--version", type=str, default="", help="The app version."
     )
     parser.add_argument(
@@ -311,7 +317,7 @@ def gen_custom_ARPSYSTEMCOMPONENT_True(args, dist_dir):
             f"{indent}<!--https://learn.microsoft.com/en-us/windows/win32/msi/property-reference-->\n"
         )
         lines_new.append(
-            f'{indent}<RegistryValue Type="string" Name="DisplayName" Value="{args.app_name}" />\n'
+            f'{indent}<RegistryValue Type="string" Name="DisplayName" Value="{args.display_name or args.app_name}" />\n'
         )
         lines_new.append(
             f'{indent}<RegistryValue Type="string" Name="DisplayIcon" Value="[INSTALLFOLDER_INNER]{args.app_name}.exe" />\n'

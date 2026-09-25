@@ -1,0 +1,20 @@
+name: Release Remote by iBoon
+
+# Builds the Windows MSI and Linux .deb and publishes them as a GitHub
+# release of this repository, which is also where the AGPL source for each
+# build is (the tag). iBoon Agent pins these by sha256 (iboon-agent's
+# src-tauri/rustdesk-pins.json) and installs them itself.
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "iboon-*"
+
+jobs:
+  build:
+    uses: ./.github/workflows/iboon-build.yml
+    secrets: inherit
+    with:
+      upload-artifact: true
+      upload-tag: ${{ github.ref_type == 'tag' && github.ref_name || 'iboon-nightly' }}

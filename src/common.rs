@@ -2080,7 +2080,78 @@ pub fn rustdesk_interval(i: Interval) -> ThrottledInterval {
     ThrottledInterval::new(i)
 }
 
+/* ---------------------------------------------------------------------------
+ * Remote by iBoon
+ *
+ * iBoon's build of RustDesk, installed and driven by iBoon Agent for
+ * TeamViewer by iBoon (remote support inside iBoon). Upstream brands a client
+ * through a custom.txt signed with RustDesk's own key; this build applies the
+ * same settings from code instead, through the same code path
+ * (apply_custom_client_data), so every entry point that calls
+ * load_custom_client -- the UI, the service, the command line -- sees them.
+ *
+ * APP_NAME is the internal name: it becomes the executable, the service, the
+ * install folder, IPC pipe names and (lowercased) Linux commands run through a
+ * shell, so it has no spaces. People see IBOON_DISPLAY_NAME.
+ * ------------------------------------------------------------------------ */
+
+pub const IBOON_APP_NAME: &str = "RemoteByiBoon";
+pub const IBOON_DISPLAY_NAME: &str = "Remote by iBoon";
+
+/// iBoon's hbbs/hbbr. Overridable at build time; the key is a public key.
+const IBOON_ID_SERVER: &str = match option_env!("IBOON_ID_SERVER") {
+    Some(v) => v,
+    None => "rustdesk.iboon.in",
+};
+const IBOON_RELAY_SERVER: &str = match option_env!("IBOON_RELAY_SERVER") {
+    Some(v) => v,
+    None => "rustdesk.iboon.in",
+};
+const IBOON_SERVER_KEY: &str = match option_env!("IBOON_SERVER_KEY") {
+    Some(v) => v,
+    None => "3IkOS1BolUlT52AGmE0IXYIsKs22iQqo3IjKscVumkg=",
+};
+
+fn apply_iboon_branding() {
+    let mut data = serde_json::json!({
+        // Hard settings: no settings page, no address book, no RustDesk account.
+        "disable-settings": "Y",
+        "disable-ab": "Y",
+        "disable-account": "Y",
+        "override-settings": {
+            "custom-rendezvous-server": IBOON_ID_SERVER,
+            "relay-server": IBOON_RELAY_SERVER,
+            "key": IBOON_SERVER_KEY,
+            // Updates come from iBoon Agent, pinned and hash-checked.
+            "enable-check-update": "N",
+            "allow-auto-update": "N",
+            "allow-remote-config-modification": "N",
+            // Only the one-time password iBoon Agent sets for an approved
+            // session gets in; no click-to-accept, no temporary password.
+            "verification-method": "use-permanent-password",
+            "approve-mode": "password",
+            // With the settings page gone, iBoon Agent still configures each
+            // session through `--password` / `--option`.
+            "allow-command-line-settings-when-settings-disabled": "Y",
+            "hide-help-cards": "Y",
+            "hide-powered-by-me": "Y",
+            "hide-stop-service": "Y"
+        }
+    });
+    // Windows only. Linux packaging, the systemd unit and process detection
+    // are all written for a binary called `rustdesk`; renaming it there is a
+    // packaging change of its own, so Linux keeps the internal name and gets
+    // everything else here.
+    if cfg!(windows) {
+        data["app-name"] = serde_json::Value::from(IBOON_APP_NAME);
+    }
+    if let Ok(data) = serde_json::from_value::<std::collections::HashMap<String, serde_json::Value>>(data) {
+        apply_custom_client_data(data);
+    }
+}
+
 pub fn load_custom_client() {
+    apply_iboon_branding();
     #[cfg(debug_assertions)]
     if let Ok(data) = std::fs::read_to_string("./custom.txt") {
         read_custom_client(data.trim());
@@ -2192,13 +2263,18 @@ pub fn read_custom_client(config: &str) {
         log::error!("Failed to dec custom client config");
         return;
     };
-    let Ok(mut data) =
+    let Ok(data) =
         serde_json::from_slice::<std::collections::HashMap<String, serde_json::Value>>(&data)
     else {
         log::error!("Failed to parse custom client config");
         return;
     };
+    apply_custom_client_data(data);
+}
 
+/// Everything read_custom_client did after verifying the signature; shared
+/// with apply_iboon_branding.
+fn apply_custom_client_data(mut data: std::collections::HashMap<String, serde_json::Value>) {
     if let Some(app_name) = data.remove("app-name") {
         if let Some(app_name) = app_name.as_str() {
             *config::APP_NAME.write().unwrap() = app_name.to_owned();
