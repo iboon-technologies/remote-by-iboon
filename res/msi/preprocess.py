@@ -165,7 +165,10 @@ def gen_pre_vars(args, dist_dir):
             f'{indent}<?define Version="{g_version}" ?>\n',
             f'{indent}<?define Manufacturer="{args.manufacturer}" ?>\n',
             f'{indent}<?define Product="{args.app_name}" ?>\n',
-            f'{indent}<?define Description="{args.app_name} Installer" ?>\n',
+            # iBoon: the name people read (installer title, Start menu folder),
+            # where Product is the internal name (exe, folder, service).
+            f'{indent}<?define DisplayProduct="{display_name(args)}" ?>\n',
+            f'{indent}<?define Description="{display_name(args)} Installer" ?>\n',
             f'{indent}<?define ProductLower="{args.app_name.lower()}" ?>\n',
             f'{indent}<?define RegKeyRoot=".$(var.ProductLower)" ?>\n',
             f'{indent}<?define RegKeyInstall="$(var.RegKeyRoot)\\Install" ?>\n',
@@ -185,27 +188,51 @@ def gen_pre_vars(args, dist_dir):
     )
 
 
-def replace_app_name_in_langs(app_name):
+def display_name(args):
+    """iBoon: the name people read; --app-name when no --display-name is given."""
+    return args.display_name or args.app_name
+
+
+# iBoon: strings that name something by the internal app name, so they keep it
+# even where people otherwise read the display name. The startup tray shortcut
+# is found and deleted as "<app name> Tray" (TryDeleteStartupShortcut, and
+# src/platform/windows.rs); the printer is installed as "<app name> Printer".
+LANG_IDS_KEEPING_APP_NAME = ("SC_Client_Tray", "MyInstallDirDlgPrinter")
+
+
+def replace_app_name_in_langs(app_name, display=None):
+    display = display or app_name
     langs_dir = Path(sys.argv[0]).parent.joinpath("Package/Language")
     for file_path in langs_dir.glob("*.wxl"):
         with open(file_path, "r", encoding="utf-8") as f:
             lines = f.readlines()
         for i, line in enumerate(lines):
-            lines[i] = line.replace("RustDesk", app_name)
+            keep = any(f'Id="{id_}"' in line for id_ in LANG_IDS_KEEPING_APP_NAME)
+            lines[i] = line.replace("RustDesk", app_name if keep else display)
         with open(file_path, "w", encoding="utf-8") as f:
             f.writelines(lines)
 
-def replace_app_name_in_custom_actions(app_name):
+def replace_app_name_in_custom_actions(app_name, display=None):
     custion_actions_dir = Path(sys.argv[0]).parent.joinpath("CustomActions")
+    # iBoon: the service keeps its internal name; its display name (what
+    # services.msc and Task Manager show) is the name people read.
+    service_display_old = 'L"%ls Service", svcName'
+    service_display_new = 'L"%ls", L"' + (display or app_name) + ' Service"'
+    service_display_done = False
     for file_path in chain(custion_actions_dir.glob("*.cpp"), custion_actions_dir.glob("*.h")):
         with open(file_path, "r", encoding="utf-8") as f:
             lines = f.readlines()
         for i, line in enumerate(lines):
             line = re.sub(r"\bRustDesk\b", app_name, line)
             line = line.replace(f"{app_name} v4 Printer Driver", "RustDesk v4 Printer Driver")
+            if service_display_old in line:
+                line = line.replace(service_display_old, service_display_new)
+                service_display_done = True
             lines[i] = line
         with open(file_path, "w", encoding="utf-8") as f:
             f.writelines(lines)
+    if not service_display_done:
+        raise RuntimeError("CustomActions changed: the service display name format was not found")
 
 def gen_upgrade_info():
     def func(lines, index_start):
@@ -562,5 +589,5 @@ if __name__ == "__main__":
     if not gen_custom_dialog_bitmaps():
         sys.exit(-1)
 
-    replace_app_name_in_langs(args.app_name)
-    replace_app_name_in_custom_actions(args.app_name)
+    replace_app_name_in_langs(args.app_name, display_name(args))
+    replace_app_name_in_custom_actions(args.app_name, display_name(args))

@@ -1,4 +1,4 @@
-name: Release Remote by iBoon
+name: Release TeamViewer by iBoon (remote-by-iboon)
 
 # Builds the Windows MSI and Linux .deb and publishes them as a GitHub
 # release of this repository, which is also where the AGPL source for each

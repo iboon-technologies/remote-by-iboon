@@ -23,7 +23,7 @@ const String kPlatformAdditionsIsInstalled = "is_installed";
 const String kPlatformAdditionsIddImpl = "idd_impl";
 /// What people see; the internal app name (RemoteByiBoon) has no spaces. See
 /// IBOON_DISPLAY_NAME in src/common.rs.
-const String kIboonDisplayName = 'Remote by iBoon';
+const String kIboonDisplayName = 'TeamViewer by iBoon';
 
 const String kPlatformAdditionsRustDeskVirtualDisplays =
     "rustdesk_virtual_displays";

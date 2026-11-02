@@ -197,6 +197,20 @@ pub unsafe extern "C" fn get_rustdesk_app_name(buffer: *mut u16, length: i32) ->
     -1
 }
 
+/// iBoon: the name people read, for the runner's first window title (the
+/// runner keeps get_rustdesk_app_name, the internal name, for finding an
+/// already-running instance).
+#[cfg(windows)]
+#[no_mangle]
+pub unsafe extern "C" fn get_iboon_display_name(buffer: *mut u16, length: i32) -> i32 {
+    let name = crate::platform::wide_string(&crate::common::get_display_app_name());
+    if length > name.len() as i32 {
+        std::ptr::copy_nonoverlapping(name.as_ptr(), buffer, name.len());
+        return 0;
+    }
+    -1
+}
+
 #[derive(Default)]
 struct SessionHandler {
     event_stream: Option<StreamSink<EventToUI>>,

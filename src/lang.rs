@@ -222,17 +222,15 @@ pub fn translate_locale(name: String, locale: &str) -> String {
         if let Some(value) = placeholder_value.as_ref() {
             s = s.replace("{}", &value);
         }
-        if !crate::is_rustdesk() {
+        // iBoon: people read the display name, not the internal one, on every
+        // platform -- including Linux, whose internal name stays `rustdesk`
+        // (so is_rustdesk() is true there and upstream would replace nothing).
+        {
             if s.contains("RustDesk")
                 && !name.starts_with("upgrade_rustdesk_server_pro")
                 && name != "powered_by_me"
             {
-                // iBoon: people read the display name, not the internal one.
-                let app_name = if crate::get_app_name() == crate::common::IBOON_APP_NAME {
-                    crate::common::IBOON_DISPLAY_NAME.to_owned()
-                } else {
-                    crate::get_app_name()
-                };
+                let app_name = crate::common::get_display_app_name();
                 if !app_name.contains("RustDesk") {
                     s = s.replace("RustDesk", &app_name);
                 } else {

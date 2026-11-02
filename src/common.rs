@@ -2081,10 +2081,10 @@ pub fn rustdesk_interval(i: Interval) -> ThrottledInterval {
 }
 
 /* ---------------------------------------------------------------------------
- * Remote by iBoon
+ * TeamViewer by iBoon (this repository: remote-by-iboon)
  *
- * iBoon's build of RustDesk, installed and driven by iBoon Agent for
- * TeamViewer by iBoon (remote support inside iBoon). Upstream brands a client
+ * iBoon's build of RustDesk, installed and driven by iBoon Agent as the client
+ * of TeamViewer by iBoon (remote support inside iBoon). Upstream brands a client
  * through a custom.txt signed with RustDesk's own key; this build applies the
  * same settings from code instead, through the same code path
  * (apply_custom_client_data), so every entry point that calls
@@ -2092,11 +2092,21 @@ pub fn rustdesk_interval(i: Interval) -> ThrottledInterval {
  *
  * APP_NAME is the internal name: it becomes the executable, the service, the
  * install folder, IPC pipe names and (lowercased) Linux commands run through a
- * shell, so it has no spaces. People see IBOON_DISPLAY_NAME.
+ * shell, so it has no spaces. It stays RemoteByiBoon (and `rustdesk` on
+ * Linux) even though people now see "TeamViewer by iBoon": installed clients
+ * upgrade in place, and iBoon Agent finds the client, its service and its
+ * processes by those names. People see IBOON_DISPLAY_NAME.
  * ------------------------------------------------------------------------ */
 
 pub const IBOON_APP_NAME: &str = "RemoteByiBoon";
-pub const IBOON_DISPLAY_NAME: &str = "Remote by iBoon";
+pub const IBOON_DISPLAY_NAME: &str = "TeamViewer by iBoon";
+
+/// The name people read: window titles, the tray, notifications, translated
+/// text. get_app_name() is the internal one.
+#[inline]
+pub fn get_display_app_name() -> String {
+    IBOON_DISPLAY_NAME.to_owned()
+}
 
 /// iBoon's hbbs/hbbr. Overridable at build time; the key is a public key.
 const IBOON_ID_SERVER: &str = match option_env!("IBOON_ID_SERVER") {

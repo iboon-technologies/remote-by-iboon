@@ -1,5 +1,6 @@
 """
-Renders every Remote by iBoon icon from one drawing, so they cannot drift.
+Renders every TeamViewer by iBoon (client) icon from one drawing, so they
+cannot drift.
 
     python res/iboon/make_icons.py
 

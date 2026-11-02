@@ -1,5 +1,5 @@
 [Desktop Entry]
-Name=RustDesk
+Name=TeamViewer by iBoon
 NoDisplay=true
 MimeType=x-scheme-handler/rustdesk;
 TryExec=rustdesk

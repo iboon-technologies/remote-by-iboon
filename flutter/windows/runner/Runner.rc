@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "iBoon Technologies" "\0"
-            VALUE "FileDescription", "Remote by iBoon" "\0"
+            VALUE "FileDescription", "TeamViewer by iBoon" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "RemoteByiBoon" "\0"
             VALUE "LegalCopyright", "Based on RustDesk, Copyright © 2026 Purslane Tech Pte. Ltd. Modified by iBoon Technologies. AGPL-3.0." "\0"
             VALUE "OriginalFilename", "RemoteByiBoon.exe" "\0"
-            VALUE "ProductName", "Remote by iBoon" "\0"
+            VALUE "ProductName", "TeamViewer by iBoon" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
