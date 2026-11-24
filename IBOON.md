@@ -23,7 +23,7 @@ the build itself is attached to that tag's GitHub release.
 | Name: `RemoteByiBoon` internally on Windows (exe, service, install folder, IPC), `rustdesk` on Linux; "TeamViewer by iBoon" wherever people read it (see the table below) | `src/common.rs` (`IBOON_DISPLAY_NAME`, `get_display_app_name`, `apply_iboon_branding`), `src/lang.rs`, `flutter/lib/consts.dart` and its three uses, `flutter/windows/runner/Runner.rc`, `Cargo.toml` |
 | iBoon's own RustDesk server and key built in | `src/common.rs` (`IBOON_*`, overridable at build time with the env vars of the same names) |
 | No settings page, address book or RustDesk account; RustDesk's own update check off; only a one-time password gets in; command-line settings still allowed (iBoon Agent configures each session with them) | `src/common.rs` |
-| Icons | `res/iboon/make_icons.py` renders all of them |
+| Icons | the approved TeamViewer by iBoon artwork, as files (the list is in `res/iboon/make_icons.py`, which no longer draws anything) |
 | Installed-apps name, installer title, shortcuts, service display name | `res/msi/preprocess.py` (`--display-name`, `DisplayProduct`), `res/msi/Package/Package.wxs`, `res/msi/Package/Components/Folders.wxs` |
 | CI: Windows x64 MSI and Linux x86_64 .deb only | `res/iboon/make_workflow.py` generates `.github/workflows/iboon-build.yml` from upstream's `flutter-build.yml`; `iboon-release.yml` runs it on `iboon-*` tags |
 
@@ -68,7 +68,6 @@ applies.
 git fetch upstream --tags
 git rebase <new upstream tag>          # onto the iboon branch
 python res/iboon/make_workflow.py      # re-derive the CI from upstream's
-python res/iboon/make_icons.py
 git tag iboon-<version>-1 && git push origin iboon --tags
 ```
 
